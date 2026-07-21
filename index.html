@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gorilaz</title>
+<meta name="theme-color" content="#0D120E">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%A6%8D</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0D120E;
+    --card:#171F19;
+    --card-hi:#202B22;
+    --edge:#2E3D31;
+    --mato:#3F8F52;
+    --mato-hi:#5AB86D;
+    --musgo:#1E4726;
+    --marfim:#E6E1D0;
+    --pedra:#8B9184;
+    --sangue:#B8283F;
+    --sangue-hi:#D6435C;
+    --concluido:#4FD9A0;
+    --ouro:#C9962B;
+    --anil:#5C89B8;
+    --sans:"Helvetica Neue",Helvetica,Inter,Arial,sans-serif;
+    --serif:Newsreader,Georgia,serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--marfim);
+    font-family:var(--sans);
+    font-size:14px;
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:60px;
+  }
+  button{font-family:inherit;color:inherit;background:none;border:none;cursor:pointer}
+  input{font-family:inherit;color:inherit;background:none;border:none;outline:none}
+  ::placeholder{color:var(--pedra);opacity:.7}
+  ::selection{background:var(--musgo);color:var(--marfim)}
+  *:focus-visible{outline:2px solid var(--mato-hi);outline-offset:2px;border-radius:2px}
+
+  header{
+    position:sticky;top:0;z-index:50;
+    background:linear-gradient(to bottom, var(--bg) 88%, rgba(13,18,14,0));
+    padding:24px 28px 16px;
+  }
+  .top-row{display:flex;align-items:center;gap:20px;flex-wrap:wrap;margin-bottom:8px}
+  .wordmark{
+    font-weight:800;font-size:18px;letter-spacing:-0.03em;
+    display:flex;align-items:baseline;gap:9px;user-select:none;white-space:nowrap;
+  }
+  .wordmark .dot{width:7px;height:7px;background:var(--mato);display:inline-block;border-radius:1px;transform:translateY(-1px)}
+  .updated{font-size:12px;color:var(--pedra)}
+  .updated b{color:var(--marfim);font-weight:600}
+  .sync-btn{
+    font-size:11px;color:var(--pedra);border:1px solid var(--edge);border-radius:7px;
+    padding:5px 10px;display:flex;align-items:center;gap:6px;transition:all .12s;white-space:nowrap;
+  }
+  .sync-btn:hover{color:var(--mato-hi);border-color:var(--mato)}
+  .sync-btn.syncing{opacity:.55;pointer-events:none}
+
+  .capture-wrap{position:relative}
+  .capture{
+    display:flex;align-items:center;gap:12px;
+    background:var(--card);border:1px solid var(--edge);border-radius:10px;
+    padding:0 16px;transition:border-color .15s;
+  }
+  .capture:focus-within{border-color:var(--mato)}
+  .capture .plus{color:var(--mato);font-size:18px;font-weight:700;line-height:1;user-select:none}
+  .capture input{flex:1;padding:12px 0;font-size:14px}
+
+  #sugg{
+    display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:280px;
+    background:var(--card-hi);border:1px solid var(--edge);border-radius:8px;
+    box-shadow:0 8px 24px rgba(0,0,0,.5);padding:5px;z-index:60;
+  }
+  #sugg.open{display:block}
+  #sugg .s-item{
+    display:flex;align-items:baseline;gap:10px;width:100%;text-align:left;
+    padding:8px 10px;border-radius:6px;font-size:13px;color:var(--marfim);
+  }
+  #sugg .s-item .where{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--pedra);margin-left:auto}
+  #sugg .s-item:hover,#sugg .s-item.hi{background:var(--edge)}
+  #sugg .s-item.hi .where{color:var(--mato-hi)}
+  #sugg .s-none{padding:8px 10px;font-size:12px;color:var(--pedra)}
+
+  .search{
+    display:flex;align-items:center;gap:8px;margin-left:auto;
+    background:var(--card);border:1px solid var(--edge);border-radius:8px;
+    padding:0 10px;transition:border-color .15s;
+  }
+  .search:focus-within{border-color:var(--mato)}
+  .search input{padding:7px 0;font-size:12.5px;width:170px}
+  .search .clear-q{display:none;color:var(--pedra);font-size:11px;padding:0 2px}
+  .search.has-q .clear-q{display:block}
+  .search .clear-q:hover{color:var(--sangue-hi)}
+
+  main{padding:4px 32px 40px;width:100%}
+
+  .inbox{
+    border:1px dashed var(--edge);border-radius:10px;
+    padding:12px 16px 14px;margin:18px 0 18px;
+  }
+  .inbox .lab{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+  .inbox-tasks{display:flex;flex-wrap:wrap;gap:8px}
+  .inbox .chip{
+    display:flex;align-items:center;gap:8px;background:var(--card);
+    border:1px solid var(--edge);border-radius:7px;padding:6px 10px;font-size:13px;
+    cursor:grab;
+  }
+  .inbox .chip:active{cursor:grabbing}
+  .inbox .chip .x{color:var(--pedra);font-size:11px;padding:0 2px}
+  .inbox .chip .x:hover{color:var(--sangue-hi)}
+  .inbox .tip{font-size:11px;color:var(--pedra)}
+
+  .section-label{
+    font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--pedra);margin:26px 0 12px;display:flex;align-items:center;gap:10px;
+  }
+  .section-label::after{content:"";flex:1;height:1px;background:var(--edge)}
+  .section-label .del{font-size:10px;color:var(--pedra);letter-spacing:0;text-transform:none;font-weight:400}
+  .section-label .del:hover{color:var(--sangue-hi)}
+  section:first-of-type .section-label{margin-top:8px}
+
+  .board-wrap{display:flex;gap:20px;align-items:flex-start}
+  .content{flex:1;min-width:0}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+  .card{
+    background:var(--card);border:1px solid var(--edge);border-radius:12px;
+    padding:14px 16px 12px;border-top:3px solid var(--pedra);
+  }
+  .card.p-urgente{border-top-color:var(--sangue-hi)}
+  .card.p-alta{border-top-color:var(--ouro)}
+  .card.p-media{border-top-color:var(--anil)}
+  .card.p-baixa{border-top-color:var(--pedra)}
+  .card.card-done{opacity:.55}
+
+  .card-head{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+  .nome-input{
+    flex:1;font-weight:700;font-size:14.5px;letter-spacing:-0.01em;
+    background:none;border:none;border-bottom:1px solid transparent;padding:2px 0;min-width:0;
+  }
+  .nome-input:hover,.nome-input:focus{border-bottom-color:var(--edge)}
+  .icon-btn{font-size:13px;color:var(--pedra);padding:2px 6px;border-radius:5px}
+  .icon-btn:hover{color:var(--marfim);background:var(--card-hi)}
+  .icon-btn.del:hover{color:var(--sangue-hi)}
+  .card-meta{font-size:11px;color:var(--pedra);margin-bottom:8px}
+  .card-note{
+    font-size:11.5px;color:var(--pedra);margin:0 0 10px;font-style:italic;
+  }
+  .card-links{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px}
+  .link-item{display:inline-flex;align-items:center;gap:3px}
+  .link-chip{
+    display:inline-flex;align-items:center;background:var(--card-hi);border:1px solid var(--edge);
+    border-radius:7px;overflow:hidden;text-decoration:none;color:var(--marfim);
+  }
+  .link-host{font-size:11px;padding:5px 8px;white-space:nowrap}
+  .link-thumb{width:52px;height:36px;object-fit:cover;display:block}
+  .link-x{font-size:10px;color:var(--pedra);padding:2px 4px}
+  .link-x:hover{color:var(--sangue-hi)}
+
+  .task{
+    display:flex;align-items:center;gap:9px;padding:6px 4px;border-radius:6px;
+    cursor:grab;
+  }
+  .task:hover{background:var(--card-hi)}
+  .task:active{cursor:grabbing}
+  .task .txt{flex:1;font-size:13px;cursor:text}
+  .task.st-feito .txt{color:var(--pedra)}
+  .task.st-cancelado .txt{color:var(--pedra);text-decoration:line-through}
+  .task.st-adiado .txt,.task.st-movido .txt{color:var(--marfim)}
+  .task .date{font-size:10px;color:var(--pedra);white-space:nowrap;letter-spacing:.04em}
+  .task .date.soon{color:var(--sangue-hi)}
+  .task .more{opacity:0;font-size:12px;color:var(--pedra);padding:0 2px;transition:opacity .1s}
+  .task:hover .more{opacity:1}
+  .task .more:hover{color:var(--mato-hi)}
+
+  .sym{
+    flex:0 0 18px;width:18px;height:18px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;line-height:1;user-select:none;cursor:pointer;
+    border:1.5px solid var(--pedra);color:transparent;
+    transition:all .12s;
+  }
+  .sym:hover{border-color:var(--marfim)}
+  .st-feito .sym{background:var(--concluido);border-color:var(--concluido);color:var(--bg);font-weight:700}
+  .st-adiado .sym{border-color:var(--ouro);color:var(--ouro);font-weight:700}
+  .st-cancelado .sym{border-color:var(--pedra);color:var(--pedra)}
+  .st-movido .sym{border-color:var(--pedra);color:var(--pedra);border-style:dashed}
+
+  .task-add{display:flex;align-items:center;gap:9px;padding:5px 4px 2px}
+  .task-add .ring{flex:0 0 18px;width:18px;height:18px;border-radius:50%;border:1.5px dashed var(--edge)}
+  .task-add input{flex:1;font-size:13px;padding:3px 0}
+  .card-foot{
+    display:flex;justify-content:space-between;align-items:center;gap:8px;
+    padding:6px 4px 0;margin-top:2px;
+  }
+  .card-foot button{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--pedra)}
+  .card-foot button:hover{color:var(--mato-hi)}
+  .card-empty{font-size:12px;color:var(--pedra);padding:4px 4px 6px}
+
+  .add-card{
+    border:1px dashed var(--edge);border-radius:10px;color:var(--pedra);
+    font-size:12px;padding:10px;text-align:center;transition:all .12s;width:100%;margin-top:12px;
+  }
+  .add-card:hover{color:var(--mato-hi);border-color:var(--mato)}
+  .add-section{
+    border:1px dashed var(--edge);border-radius:10px;color:var(--pedra);
+    font-size:12px;padding:12px;text-align:center;transition:all .12s;width:100%;margin-top:30px;
+  }
+  .add-section:hover{color:var(--mato-hi);border-color:var(--mato)}
+  .inline-add{background:var(--card);border:1px solid var(--mato);border-radius:10px;padding:10px 12px;width:100%}
+  .inline-add input{width:100%;font-size:13px}
+
+  /* ---------- painel de prioridades (fixo, direita) ---------- */
+  .priority-panel{
+    flex:0 0 300px;background:var(--card);border:1px solid var(--edge);border-radius:10px;
+    padding:16px;position:sticky;top:110px;max-height:calc(100vh - 130px);overflow-y:auto;
+  }
+  .priority-block + .priority-block{margin-top:22px;padding-top:18px;border-top:1px solid var(--edge)}
+  .priority-block .ptitle{
+    font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--marfim);margin-bottom:4px;
+  }
+  .priority-block.is-glz .ptitle{color:var(--mato-hi)}
+  .priority-block .psub{font-size:11px;color:var(--pedra);margin-bottom:12px}
+  .prio-row{
+    display:flex;align-items:center;gap:7px;padding:8px 6px;border-radius:7px;
+    cursor:grab;border:1px solid transparent;
+  }
+  .prio-row:hover{background:var(--card-hi);border-color:var(--edge)}
+  .prio-row:active{cursor:grabbing}
+  .prio-row.drag-over{border-color:var(--mato)}
+  .prio-row .rank{font-size:10px;color:var(--pedra);flex:0 0 14px;text-align:right}
+  .prio-row .txt{flex:1;font-size:12.5px;cursor:pointer;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prio-row .mv,.prio-row .x{opacity:0;font-size:11px;color:var(--pedra);flex:0 0 auto}
+  .prio-row:hover .mv,.prio-row:hover .x{opacity:1}
+  .prio-row .mv:hover{color:var(--mato-hi)}
+  .prio-row .x:hover{color:var(--sangue-hi)}
+  .priority-empty{font-size:12px;color:var(--pedra);padding:6px}
+  .priority-add{display:flex;gap:6px;margin-top:10px;border-top:1px solid var(--edge);padding-top:10px}
+  .priority-add select{flex:1;font-size:12px;background:var(--card-hi);color:var(--marfim);border:1px solid var(--edge);border-radius:6px;padding:6px;min-width:0}
+  .priority-add select option{background:var(--card-hi);color:var(--marfim)}
+  .priority-add button{font-size:11px;color:var(--mato-hi);white-space:nowrap}
+  .priority-add button:hover{color:var(--mato)}
+
+  .board-empty{
+    font-family:var(--serif);font-style:italic;font-size:17px;color:var(--pedra);
+    padding:60px 10px;text-align:center;width:100%;
+  }
+  #toast{
+    position:fixed;bottom:26px;left:50%;transform:translate(-50%,12px);
+    background:var(--card-hi);border:1px solid var(--edge);border-radius:8px;
+    padding:9px 18px;font-size:12px;color:var(--marfim);opacity:0;pointer-events:none;
+    transition:opacity .18s,transform .18s;z-index:99;
+  }
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+  #toast .ok{color:var(--concluido);margin-right:6px;font-weight:700}
+  #toast .undo{margin-left:10px;color:var(--mato-hi);text-decoration:underline;font-weight:600}
+  #toast .undo:hover{color:var(--mato)}
+
+  #ctx{
+    position:fixed;z-index:200;display:none;
+    background:var(--card-hi);border:1px solid var(--edge);border-radius:8px;
+    padding:4px;min-width:190px;box-shadow:0 8px 24px rgba(0,0,0,.5);
+  }
+  #ctx.open{display:block}
+  #ctx .c-lab{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--pedra);padding:6px 10px 3px}
+  #ctx .c-item{
+    display:flex;align-items:center;gap:8px;width:100%;text-align:left;
+    padding:7px 10px;border-radius:6px;font-size:12.5px;color:var(--marfim);
+  }
+  #ctx .c-item:hover{background:var(--edge)}
+  #ctx .c-item .sub{margin-left:auto;font-size:10px;color:var(--pedra);letter-spacing:.06em;text-transform:uppercase}
+  #ctx .c-scroll{max-height:46vh;overflow-y:auto}
+  #ctx .c-none{padding:8px 10px;font-size:12px;color:var(--pedra)}
+
+  .legend{
+    display:flex;gap:18px;padding:20px 6px 0;flex-wrap:wrap;
+    font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--pedra);
+  }
+  .legend span{display:flex;align-items:center;gap:6px}
+  .legend i{font-style:normal;font-size:11px}
+  .legend .g{color:var(--concluido)}.legend .o{color:var(--ouro)}
+  .legend .dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+
+  @media (max-width:900px){
+    .board-wrap{flex-direction:column}
+    .priority-panel{position:static;flex:none;width:100%;max-height:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="top-row">
+    <div class="wordmark"><span class="dot"></span>🦍 GORILAZ</div>
+    <div class="updated">Última atualização: <b id="updatedText"></b></div>
+    <button class="sync-btn" id="syncBtn" onclick="syncFromNotion(false)" title="Puxar atualização do Notion agora">🔄 Notion</button>
+    <div class="search" id="searchbox">
+      <input id="search" type="text" autocomplete="off" placeholder="buscar quadro ou tarefa"
+        oninput="setFilter(this.value)">
+      <button class="clear-q" onclick="$('#search').value='';setFilter('')" title="limpar busca">✕</button>
+    </div>
+  </div>
+  <div class="capture-wrap">
+    <div class="capture">
+      <span class="plus">+</span>
+      <input id="capture" type="text" autocomplete="off"
+        placeholder="Captura rápida: digita e aperta enter. Use @nome pra direcionar pro quadro certo."
+        onkeydown="captureKey(event)" oninput="captureInput()" onblur="hideSugg(true)">
+    </div>
+    <div id="sugg"></div>
+  </div>
+</header>
+
+<main>
+  <div id="inbox"></div>
+  <div class="board-wrap">
+    <div class="content">
+      <div id="sections"></div>
+    </div>
+    <aside class="priority-panel">
+      <div class="priority-block is-mkt">
+        <div class="ptitle">Prioridades Marketing</div>
+        <div class="psub">O que a gente toca agora. Topo = primeiro. Arrasta pra reordenar.</div>
+        <div id="priorityList-mkt"></div>
+        <div class="priority-add">
+          <select id="prioritySelect-mkt"></select>
+          <button onclick="addToPriority('mkt')">+ add</button>
+        </div>
+      </div>
+      <div class="priority-block is-glz">
+        <div class="ptitle">Prioridade Gorilaz</div>
+        <div class="psub">O que depende de vocês pra andar. Topo = mais urgente.</div>
+        <div id="priorityList-glz"></div>
+        <div class="priority-add">
+          <select id="prioritySelect-glz"></select>
+          <button onclick="addToPriority('glz')">+ add</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+  <div class="legend">
+    <span><i class="g">✓</i> feito</span>
+    <span><i class="o">→</i> adiado</span>
+    <span><i>✕</i> cancelado</span>
+    <span><i>↪</i> movido</span>
+    <span><i>○</i> clique no símbolo para ciclar</span>
+    <span><span class="dot" style="background:var(--sangue-hi)"></span>urgente</span>
+    <span><span class="dot" style="background:var(--ouro)"></span>alta</span>
+    <span><span class="dot" style="background:var(--anil)"></span>média</span>
+    <span><span class="dot" style="background:var(--pedra)"></span>baixa</span>
+  </div>
+</main>
+
+<div id="toast"></div>
+<div id="ctx" role="menu"></div>
+
+<script>
+'use strict';
+
+/* ============ persistência ============ */
+const KEY = 'gorilaz-hub-v1';
+let memoryOnly = false;
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){ memoryOnly = true; }
+  return null;
+}
+function save(){
+  if(!memoryOnly){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }
+    catch(e){ memoryOnly = true; }
+  }
+}
+function touch(){
+  state.lastUpdated = new Date().toISOString().slice(0,10);
+}
+
+/* ============ estado inicial ============ */
+let uid = () => Math.random().toString(36).slice(2,9);
+const STATUSES = ['pendente','feito','adiado','cancelado','movido'];
+const SYMBOL = {pendente:'', feito:'✓', adiado:'→', cancelado:'✕', movido:'↪'};
+const PRIO_CLASS = {'Urgente':'p-urgente','Alta prioridade':'p-alta','Média Prioridade':'p-media','Baixa Prioridade':'p-baixa'};
+const PRIO_RANK = {'Urgente':0,'Alta prioridade':1,'Média Prioridade':2,'Baixa Prioridade':3,'':4};
+
+function T(text, status){ return {id:uid(), text, status:status||'pendente', date:''}; }
+
+// seed importado do GLZ_TAREFAS (Notion) em 17/07/2026, quebrado em passos de execução.
+function seed(){
+  return {
+    lastUpdated: new Date().toISOString().slice(0,10),
+    inbox: [],
+    prio: { mkt: [], glz: [] },
+    sections: [
+      { id:uid(), name:'Vestuário', macros:[
+        { id:uid(), name:'Boné Gorilaz', prioridade:'Baixa Prioridade', obs:'Em revisão interna — cores adicionadas', tasks:[
+          T('Definir material do boné','feito'),
+          T('Definir cores','feito'),
+          T('Fechar fornecedor de produção'),
+          T('Revisar amostra'),
+          T('Aprovar modelo final'),
+          T('Definir preço de venda'),
+          T('Fotografar e postar pré-venda'),
+        ]},
+        { id:uid(), name:'Novas estampas de Rash', prioridade:'Média Prioridade', obs:'A estampa atual parece cópia de uma antiga da Kingz', tasks:[
+          T('Levantar referências novas (evitar parecer cópia da Kingz)'),
+          T('Definir conceito/tema da estampa'),
+          T('Criar arte da estampa'),
+          T('Validar estampa final'),
+          T('Fechar produção do rash'),
+        ]},
+        { id:uid(), name:'Bolsa Kimono', prioridade:'Baixa Prioridade', obs:'Falta confirmar prioridade e prazo', tasks:[
+          T('Confirmar se é prioridade pros próximos meses e qual prazo'),
+          T('Definir modelo e material'),
+          T('Definir design'),
+        ]},
+        { id:uid(), name:'Peças femininas', prioridade:'Baixa Prioridade', obs:'', tasks:[
+          T('Definir quais peças femininas entram na linha'),
+          T('Definir modelo e tecido'),
+          T('Definir design/estampa'),
+        ]},
+      ]},
+      { id:uid(), name:'Acessório', macros:[
+        { id:uid(), name:'Coqueteleira', prioridade:'Alta prioridade', obs:'Em briefing — definir se seguimos com o modelo atual', tasks:[
+          T('Decidir se segue com o modelo atual ou muda'),
+          T('Definir material'),
+          T('Definir design/estampa'),
+          T('Validar modelo final'),
+        ]},
+        { id:uid(), name:'Novo guard rosa', prioridade:'Baixa Prioridade', obs:'Aguardando chegar pra avaliar', tasks:[
+          T('Esperar produto chegar'),
+          T('Avaliar quando chegar: vale a pena tocar pra frente?'),
+        ]},
+        { id:uid(), name:'Definir modelo de bolsa/Mochila', prioridade:'Baixa Prioridade', obs:'Falta levantar links de modelos possíveis', tasks:[
+          T('Levantar links de possíveis modelos de referência'),
+          T('Escolher modelo final'),
+          T('Definir material e cores'),
+        ]},
+        { id:uid(), name:'Case Protetor 3D', prioridade:'Urgente', obs:'Concluído', tasks:[
+          T('Definir combinações de cores','feito'),
+          T('Produzir','feito'),
+        ]},
+      ]},
+      { id:uid(), name:'Redes Sociais', macros:[
+        { id:uid(), name:'Pré venda Guard (produção)', prioridade:'Urgente', obs:'Em produção — só confirmar detalhe final', tasks:[
+          T('Fechar produção','feito'),
+          T('Confirmar detalhe final (só confirmar)'),
+          T('Criar posts de divulgação da pré-venda'),
+          T('Publicar e abrir pré-venda'),
+        ]},
+        { id:uid(), name:'Pré venda Guard (revisão)', prioridade:'Alta prioridade', obs:'Em revisão interna — copiar modelo minimal de post', tasks:[
+          T('Copiar modelo minimal de post'),
+          T('Revisar arte antes de publicar'),
+          T('Aprovar internamente'),
+          T('Publicar'),
+        ]},
+        { id:uid(), name:'Revisar Instagram', prioridade:'Alta prioridade', obs:'', tasks:[
+          T('Levantar o que precisa mudar no perfil'),
+          T('Definir novo grid/destaques'),
+          T('Aplicar mudanças'),
+        ]},
+        { id:uid(), name:'Vídeo Prime', prioridade:'Alta prioridade', obs:'Publicado em 19/06', tasks:[
+          T('Vídeo publicado (19/06)','feito'),
+        ]},
+      ]},
+      { id:uid(), name:'AJP', macros:[
+        { id:uid(), name:'Folder b2b', prioridade:'Média Prioridade', obs:'Em revisão interna — folder pra professores sobre o B2B', tasks:[
+          T('Definir conteúdo do folder','feito'),
+          T('Fechar arte final','feito'),
+          T('Revisar antes de mandar pra gráfica'),
+          T('Validar arte final'),
+          T('Mandar produzir'),
+        ]},
+        { id:uid(), name:'Backdrop', prioridade:'Alta prioridade', obs:'Em produção — só mandar produzir', tasks:[
+          T('Arte do backdrop fechada','feito'),
+          T('Mandar produzir'),
+          T('Conferir entrega antes do evento'),
+        ]},
+        { id:uid(), name:'Folder Flow', prioridade:'Alta prioridade', obs:'Concluído — encaminhado para produção', tasks:[
+          T('Encaminhado pra produção','feito'),
+        ]},
+        { id:uid(), name:'Vídeo AJP', prioridade:'Urgente', obs:'Concluído', tasks:[
+          T('Vídeo concluído','feito'),
+        ]},
+        { id:uid(), name:'Instagram Antecipação', prioridade:'Urgente', obs:'Concluído', tasks:[
+          T('Post de antecipação publicado','feito'),
+        ]},
+      ]},
+      { id:uid(), name:'B2B', macros:[
+        { id:uid(), name:'Material B2B Anão', prioridade:'Alta prioridade', obs:'Em briefing — material B2B em PDF', tasks:[
+          T('Definir conteúdo do PDF B2B'),
+          T('Montar o PDF'),
+          T('Revisar com o time'),
+          T('Aprovar versão final'),
+        ]},
+      ]},
+      { id:uid(), name:'ADS', macros:[
+        { id:uid(), name:'Criativos Flow', prioridade:'Alta prioridade', obs:'Em briefing — info adicionada', tasks:[
+          T('Info adicionada, falta briefar criativo','feito'),
+          T('Criar os criativos'),
+          T('Aprovar e subir nos anúncios'),
+        ]},
+      ]},
+      { id:uid(), name:'PRIME', macros:[
+        { id:uid(), name:'Definir Logo Prismas', prioridade:'Alta prioridade', obs:'Concluído — só enviar', tasks:[
+          T('Logo definido, só enviar','feito'),
+        ]},
+      ]},
+      { id:uid(), name:'Sem categoria', macros:[
+        { id:uid(), name:'Site Flow', prioridade:'', obs:'Concluído', tasks:[
+          T('Site concluído','feito'),
+        ]},
+      ]},
+    ]
+  };
+}
+
+let state = loadState() || seed();
+if(state.lastUpdated === undefined) state.lastUpdated = new Date().toISOString().slice(0,10);
+if(state.inbox === undefined) state.inbox = [];
+// migração leve: versões antigas usavam "columns" em vez de "sections"
+if(!state.sections && state.columns){ state.sections = state.columns; delete state.columns; }
+if(!Array.isArray(state.sections)) state.sections = [];
+// migração leve: versão anterior tinha uma fila única "priorityOrder"; agora são duas,
+// marketing (o que a gente toca) e gorilaz (o que depende deles pra andar).
+if(!state.prio){
+  state.prio = { mkt: Array.isArray(state.priorityOrder) ? state.priorityOrder.slice() : [], glz: [] };
+  delete state.priorityOrder;
+}
+if(!Array.isArray(state.prio.mkt)) state.prio.mkt = [];
+if(!Array.isArray(state.prio.glz)) state.prio.glz = [];
+// itens cujo próximo passo já é reconhecidamente da Gorilaz (ex: mandar imprimir),
+// não do marketing — usado só na primeira montagem automática da fila.
+const GLZ_OWNED = ['Backdrop'];
+
+/* ============ helpers ============ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function toast(msg, ok, undoable){
+  const t = $('#toast');
+  t.innerHTML = (ok?'<span class="ok">✓</span>':'') + esc(msg)
+    + (undoable ? '<button class="undo" onclick="undo()">desfazer</button>' : '');
+  t.classList.add('show');
+  clearTimeout(t._h);
+  t._h = setTimeout(()=>t.classList.remove('show'), undoable ? 4500 : 1800);
+}
+
+/* ============ desfazer ============ */
+let undoStack = [];
+function pushUndo(label){
+  undoStack.push({label, snap: JSON.stringify(state)});
+  if(undoStack.length > 30) undoStack.shift();
+}
+function undo(){
+  const u = undoStack.pop();
+  if(!u){ toast('Nada pra desfazer.'); return; }
+  state = JSON.parse(u.snap);
+  toast('Desfeito: '+u.label+'.', true);
+  render();
+}
+
+function findMacro(mid){
+  for(const s of state.sections){
+    const m = s.macros.find(m=>m.id===mid);
+    if(m) return {m, s};
+  }
+  return null;
+}
+function findSection(sid){
+  const i = state.sections.findIndex(s=>s.id===sid);
+  return i>-1 ? {s:state.sections[i], i} : null;
+}
+function allDone(m){
+  return m.tasks.length>0 && m.tasks.every(t=>['feito','cancelado'].includes(t.status));
+}
+
+/* ============ prioridade: mantém as duas filas coerentes com o que existe ============ */
+function repairPriorityOrder(){
+  const allIds = [];
+  state.sections.forEach(s=>s.macros.forEach(m=>allIds.push(m.id)));
+  // tira das filas ids de macros que não existem mais
+  state.prio.mkt = state.prio.mkt.filter(id=>allIds.includes(id));
+  state.prio.glz = state.prio.glz.filter(id=>allIds.includes(id));
+  // se as duas filas tão vazias (primeira carga), popula ordenando por prioridade do Notion
+  // e separa pra fila da Gorilaz o que já é reconhecidamente próximo passo deles
+  if(!state.prio.mkt.length && !state.prio.glz.length){
+    const withMacro = allIds
+      .map(id=>({id, m:findMacro(id).m}))
+      .filter(o=>!allDone(o.m));
+    withMacro.sort((a,b)=>{
+      const ra = PRIO_RANK[a.m.prioridade]??4, rb = PRIO_RANK[b.m.prioridade]??4;
+      if(ra!==rb) return ra-rb;
+      return a.m.name.localeCompare(b.m.name,'pt-BR',{sensitivity:'base'});
+    });
+    withMacro.forEach(o=>{
+      (GLZ_OWNED.includes(o.m.name) ? state.prio.glz : state.prio.mkt).push(o.id);
+    });
+  }
+}
+
+function fmtDate(d){
+  if(!d) return '';
+  const [y,m,day] = d.split('-');
+  return day + '/' + m;
+}
+function isSoon(d){
+  if(!d) return false;
+  const diff = (new Date(d+'T00:00') - new Date().setHours(0,0,0,0)) / 86400000;
+  return diff <= 1;
+}
+function fmtBR(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+/* ============ busca ============ */
+let filterQ = '';
+let filterT = null;
+function setFilter(v){
+  clearTimeout(filterT);
+  filterT = setTimeout(()=>{ filterQ = v.trim(); render(); }, 150);
+}
+function macroMatches(m){
+  if(!filterQ) return true;
+  const q = filterQ.toLowerCase();
+  if(m.name.toLowerCase().includes(q)) return true;
+  if((m.obs||'').toLowerCase().includes(q)) return true;
+  return m.tasks.some(t=>t.text.toLowerCase().includes(q));
+}
+
+/* ============ render ============ */
+function render(){
+  $('#updatedText').textContent = fmtBR(state.lastUpdated);
+  repairPriorityOrder();
+  renderInbox();
+  renderSections();
+  renderPriorityPanel();
+  $('#searchbox').classList.toggle('has-q', !!filterQ);
+  const sInput = $('#search');
+  if(document.activeElement !== sInput && sInput.value !== filterQ) sInput.value = filterQ;
+  save();
+}
+
+function renderInbox(){
+  const el = $('#inbox');
+  const inbox = state.inbox;
+  if(!inbox.length){ el.innerHTML=''; return; }
+  el.innerHTML = `
+    <div class="inbox" ondragover="event.preventDefault()">
+      <div class="lab">
+        <span class="microlabel" style="font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--pedra)">Sem destino</span>
+        <span class="tip">arrasta pro quadro certo, ou usa @nome na captura</span>
+      </div>
+      <div class="inbox-tasks">
+        ${inbox.map(t=>`
+          <div class="chip" draggable="true"
+               ondragstart="dragTask(event,'${t.id}','inbox')">
+            <span>${esc(t.text)}</span>
+            <button class="x" onclick="removeInbox('${t.id}')" title="descartar">✕</button>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderSections(){
+  const el = $('#sections');
+  let html = '';
+  let anyVisible = false;
+
+  if(!state.sections.length){
+    html += `<div class="board-empty">Nenhum quadro ainda.</div>`;
+  }
+
+  for(const s of state.sections){
+    const visibleMacros = s.macros.filter(macroMatches);
+    if(filterQ && !visibleMacros.length) continue;
+    anyVisible = true;
+    html += `
+    <section data-sid="${s.id}">
+      <div class="section-label">
+        <span>${esc(s.name)}</span>
+        ${!filterQ ? `<button class="del" onclick="removeSection('${s.id}')" title="excluir categoria">excluir categoria</button>` : ''}
+      </div>
+      <div class="grid">
+        ${visibleMacros.length ? visibleMacros.map(m=>cardHtml(m)).join('') : ''}
+      </div>
+      ${!filterQ ? `<button class="add-card" onclick="startAddMacro(this,'${s.id}')">+ quadro</button>` : ''}
+    </section>`;
+  }
+
+  if(filterQ && !anyVisible){
+    html = `<div class="board-empty">Nada bate com "${esc(filterQ)}".</div>`;
+  }
+  if(!filterQ){
+    html += `<button class="add-section" onclick="startAddSection(this)">+ categoria</button>`;
+  }
+  el.innerHTML = html;
+}
+
+function cardHtml(m){
+  const pend = m.tasks.filter(t=>t.status==='pendente').length;
+  const total = m.tasks.length;
+  const done = allDone(m);
+  const meta = total ? (pend ? pend+' aberta'+(pend>1?'s':'') : 'tudo resolvido') : '';
+  const prioClass = PRIO_CLASS[m.prioridade] || '';
+  return `
+  <div class="card ${prioClass} ${done?'card-done':''}" data-mid="${m.id}"
+       ondragover="cardDragOver(event,'${m.id}')"
+       ondragleave="this.classList.remove('drag-over')"
+       ondrop="cardDrop(event,'${m.id}')">
+    <div class="card-head">
+      <input class="nome-input" data-field="nome" data-mid="${m.id}" value="${esc(m.name)}">
+      <button class="icon-btn del" onclick="removeMacro('${m.id}')" title="excluir quadro">×</button>
+    </div>
+    <div class="card-meta">${meta}</div>
+    ${m.obs ? `<div class="card-note">${esc(m.obs)}</div>` : ''}
+    ${m.links && m.links.length ? `<div class="card-links">${m.links.map(l=>linkHtml(m.id,l)).join('')}</div>` : ''}
+    <div class="tasks">
+      ${m.tasks.length ? m.tasks.map(t=>renderTask(m.id,t)).join('') : '<div class="card-empty">vazio, por enquanto</div>'}
+    </div>
+    <div class="task-add">
+      <span class="ring"></span>
+      <input type="text" placeholder="nova tarefa, enter salva"
+             onkeydown="if(event.key==='Enter'&&this.value.trim()){addTask('${m.id}',this.value.trim());}">
+    </div>
+    <div class="card-foot">
+      <button onclick="addLink('${m.id}')">+ link/referência</button>
+      <button onclick="clearDone('${m.id}')">limpar feitas e canceladas</button>
+    </div>
+  </div>`;
+}
+
+function isImageUrl(url){
+  return /\.(png|jpe?g|gif|webp|avif)(\?.*)?$/i.test(url);
+}
+function linkHtml(mid,l){
+  const safeUrl = esc(l.url);
+  let host = '';
+  try{ host = new URL(l.url).hostname.replace(/^www\./,''); }catch(e){ host = l.url; }
+  const body = isImageUrl(l.url)
+    ? `<img class="link-thumb" src="${safeUrl}" alt="referência" loading="lazy">`
+    : `<span class="link-host">🔗 ${esc(host)}</span>`;
+  return `
+  <span class="link-item">
+    <a class="link-chip" href="${safeUrl}" target="_blank" rel="noopener noreferrer" title="${safeUrl}">${body}</a>
+    <button class="link-x" onclick="removeLink('${mid}','${l.id}')" title="remover referência">✕</button>
+  </span>`;
+}
+
+function renderTask(mid,t){
+  const d = fmtDate(t.date);
+  return `
+  <div class="task st-${t.status}" draggable="true"
+       ondragstart="dragTask(event,'${t.id}','${mid}')" ondragend="dragEnd(event)">
+    <span class="sym" title="${t.status}" onclick="cycleStatus('${mid}','${t.id}')">${SYMBOL[t.status]}</span>
+    <span class="txt" ondblclick="editInline(this,'task','${mid}|${t.id}')" title="duplo clique edita">${esc(t.text)}</span>
+    ${d?`<span class="date ${isSoon(t.date)?'soon':''}">${d}</span>`:''}
+    <button class="more" onclick="openMoveMenu(event,'${mid}','${t.id}')" title="mover pra outro quadro">⇢</button>
+    <button class="more" onclick="askDate('${mid}','${t.id}')" title="definir data">📅</button>
+    <button class="more" onclick="removeTask('${mid}','${t.id}')" title="excluir">✕</button>
+  </div>`;
+}
+
+/* ============ menu flutuante: mover tarefa pra outro quadro ============ */
+function openCtx(x, y, html){
+  const box = $('#ctx');
+  box.innerHTML = html;
+  box.style.left = '0px'; box.style.top = '0px';
+  box.classList.add('open');
+  const r = box.getBoundingClientRect();
+  box.style.left = Math.max(8, Math.min(x, window.innerWidth - r.width - 10)) + 'px';
+  box.style.top  = Math.max(8, Math.min(y, window.innerHeight - r.height - 10)) + 'px';
+}
+function closeCtx(){
+  $('#ctx').classList.remove('open');
+}
+function openMoveMenu(e, mid, tid){
+  e.stopPropagation();
+  let html = '<div class="c-lab">Mover tarefa para</div><div class="c-scroll">';
+  let any = false;
+  state.sections.forEach(s=>{
+    s.macros.forEach(m=>{
+      if(m.id===mid) return;
+      any = true;
+      html += `<button class="c-item" onclick="moveTaskTo('${mid}','${tid}','${m.id}');closeCtx()">${esc(m.name)}<span class="sub">${esc(s.name)}</span></button>`;
+    });
+  });
+  if(!any) html += `<div class="c-none">nenhum outro quadro ainda</div>`;
+  html += `<button class="c-item" onclick="moveTaskTo('${mid}','${tid}','inbox');closeCtx()">Caixa de entrada</button></div>`;
+  const r = e.currentTarget.getBoundingClientRect();
+  openCtx(r.left, r.bottom + 6, html);
+}
+function moveTaskTo(mid, tid, dest){
+  const f = findMacro(mid); if(!f) return;
+  const i = f.m.tasks.findIndex(t=>t.id===tid); if(i<0) return;
+  const [task] = f.m.tasks.splice(i,1);
+  if(dest==='inbox'){
+    state.inbox.push(task);
+    toast('De volta pra caixa de entrada.', true);
+  }else{
+    const d = findMacro(dest);
+    if(d){ d.m.tasks.push(task); toast('Movida para '+d.m.name, true); }
+    else f.m.tasks.splice(i,0,task);
+  }
+  touch(); render();
+}
+
+/* ============ painel de prioridades (duas filas: mkt e glz) ============ */
+const OTHER_QUEUE = {mkt:'glz', glz:'mkt'};
+const QUEUE_LABEL = {mkt:'Marketing', glz:'Gorilaz'};
+let prioDrag = null; // {queue, index}
+
+function renderPriorityPanel(){
+  renderPrioQueue('mkt');
+  renderPrioQueue('glz');
+}
+
+function renderPrioQueue(q){
+  const list = $('#priorityList-'+q);
+  const sel = $('#prioritySelect-'+q);
+  const ids = state.prio[q];
+
+  if(!ids.length){
+    list.innerHTML = `<div class="priority-empty">Fila vazia. Adiciona um quadro abaixo.</div>`;
+  }else{
+    list.innerHTML = ids.map((id,i)=>{
+      const f = findMacro(id);
+      if(!f) return '';
+      return `
+      <div class="prio-row" draggable="true" data-mid="${id}"
+           ondragstart="prioDragStart(event,'${q}',${i})"
+           ondragover="prioDragOver(event,'${q}',${i})"
+           ondragleave="this.classList.remove('drag-over')"
+           ondrop="prioDrop(event,'${q}',${i})"
+           ondragend="prioDragEndRow(event)">
+        <span class="rank">${i+1}</span>
+        <span class="txt" onclick="scrollToCard('${id}')" title="ir pro quadro">${esc(f.m.name)}</span>
+        <button class="mv" onclick="moveToOtherQueue('${q}','${id}')" title="mover pra fila de ${esc(QUEUE_LABEL[OTHER_QUEUE[q]])}">⇄</button>
+        <button class="x" onclick="removeFromPriority('${q}','${id}')" title="tirar da fila">✕</button>
+      </div>`;
+    }).join('');
+  }
+
+  // popula o select com quadros que ainda não estão nessa fila
+  const inQueue = new Set(ids);
+  const options = [];
+  state.sections.forEach(s=>s.macros.forEach(m=>{
+    if(!inQueue.has(m.id)) options.push(m);
+  }));
+  sel.innerHTML = options.length
+    ? options.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('')
+    : `<option value="">tudo já tá na fila</option>`;
+}
+
+function scrollToCard(mid){
+  const el = document.querySelector(`.card[data-mid="${mid}"]`);
+  if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+}
+function removeFromPriority(q,mid){
+  state.prio[q] = state.prio[q].filter(id=>id!==mid);
+  touch(); render();
+}
+function moveToOtherQueue(q,mid){
+  const dest = OTHER_QUEUE[q];
+  state.prio[q] = state.prio[q].filter(id=>id!==mid);
+  state.prio[dest] = state.prio[dest].filter(id=>id!==mid);
+  state.prio[dest].unshift(mid);
+  touch(); render();
+  toast('Movido pra fila de '+QUEUE_LABEL[dest], true);
+}
+function addToPriority(q){
+  const sel = $('#prioritySelect-'+q);
+  const id = sel.value;
+  if(!id) return;
+  state.prio[q].push(id);
+  touch(); render();
+}
+function prioDragStart(e,q,i){
+  prioDrag = {queue:q, index:i};
+  e.dataTransfer.effectAllowed = 'move';
+  e.stopPropagation();
+}
+function prioDragOver(e,q,i){
+  if(!prioDrag || prioDrag.queue!==q) return;
+  e.preventDefault(); e.stopPropagation();
+  e.currentTarget.classList.add('drag-over');
+}
+function prioDrop(e,q,i){
+  e.preventDefault(); e.stopPropagation();
+  e.currentTarget.classList.remove('drag-over');
+  if(!prioDrag || prioDrag.queue!==q || prioDrag.index===i) return;
+  const arr = state.prio[q];
+  const [moved] = arr.splice(prioDrag.index,1);
+  arr.splice(i,0,moved);
+  prioDrag = null;
+  touch(); render();
+  toast('Reordenado.', true);
+}
+function prioDragEndRow(e){
+  prioDrag = null;
+  document.querySelectorAll('.prio-row.drag-over').forEach(el=>el.classList.remove('drag-over'));
+}
+
+/* ============ captura ============ */
+function captureKey(e){
+  const suggOpen = $('#sugg').classList.contains('open');
+  if(suggOpen){
+    if(e.key==='ArrowDown'){ e.preventDefault(); suggNav(1); return; }
+    if(e.key==='ArrowUp'){ e.preventDefault(); suggNav(-1); return; }
+    if(e.key==='Escape'){ hideSugg(); return; }
+    if(e.key==='Enter' && suggIndex > -1){
+      const items = document.querySelectorAll('#sugg .s-item');
+      if(items[suggIndex]){
+        e.preventDefault();
+        items[suggIndex].dispatchEvent(new MouseEvent('mousedown'));
+        return;
+      }
+    }
+    if(e.key==='Enter') hideSugg();
+  }
+  if(e.key !== 'Enter') return;
+  const input = e.target;
+  let text = input.value.trim();
+  if(!text) return;
+
+  let placed = false;
+  const at = text.indexOf('@');
+  if(at > -1){
+    const after = text.slice(at+1).toLowerCase();
+    let best = null, bestLen = 0;
+
+    for(const s of state.sections) for(const m of s.macros){
+      const nm = m.name.toLowerCase();
+      if(nm && after.startsWith(nm) && nm.length > bestLen){ best = m; bestLen = nm.length; }
+    }
+    if(!best){
+      const token = (after.match(/^[^\s]+/)||[''])[0];
+      if(token) outer: for(const s of state.sections) for(const m of s.macros){
+        if(m.name.toLowerCase().startsWith(token)){ best = m; bestLen = token.length; break outer; }
+      }
+    }
+
+    if(best){
+      const clean = (text.slice(0,at) + text.slice(at+1+bestLen)).replace(/\s{2,}/g,' ').trim();
+      if(clean){
+        best.tasks.push(T(clean));
+        toast('Entrou em '+best.name, true);
+        placed = true;
+      }
+    }else{
+      toast('Nenhum quadro bate com esse @. Foi pra caixa de entrada.');
+    }
+  }
+  if(!placed){
+    state.inbox.push(T(text));
+    toast('Capturado. Destino depois.', true);
+  }
+  input.value = '';
+  hideSugg();
+  touch();
+  render();
+}
+
+/* ============ sugestões de quadro no @ ============ */
+let suggIndex = -1;
+function allMacrosFlat(){
+  const out = [];
+  state.sections.forEach(s=>s.macros.forEach(m=>out.push({m, sectionName:s.name})));
+  return out;
+}
+function suggContext(){
+  const input = $('#capture');
+  const pos = input.selectionStart ?? input.value.length;
+  const upto = input.value.slice(0, pos);
+  const at = upto.lastIndexOf('@');
+  if(at === -1) return null;
+  return {at, typed: upto.slice(at+1).toLowerCase(), pos};
+}
+function captureInput(){
+  const ctx = suggContext();
+  const box = $('#sugg');
+  if(!ctx){ hideSugg(); return; }
+  const list = allMacrosFlat().filter(x => x.m.name.toLowerCase().startsWith(ctx.typed));
+  suggIndex = list.length ? 0 : -1;
+  box.innerHTML = list.length
+    ? list.map((x,i)=>`
+        <button class="s-item ${i===suggIndex?'hi':''}"
+          onmousedown="event.preventDefault();pickSugg('${x.m.id}')">
+          <span>${esc(x.m.name)}</span><span class="where">${esc(x.sectionName)}</span>
+        </button>`).join('')
+    : `<div class="s-none">nenhum quadro começa assim</div>`;
+  box.classList.add('open');
+}
+function pickSugg(mid){
+  const f = findMacro(mid); if(!f) return;
+  const input = $('#capture');
+  const ctx = suggContext(); if(ctx===null) return;
+  input.value = input.value.slice(0, ctx.at) + '@' + f.m.name + ' ' + input.value.slice(ctx.pos);
+  hideSugg();
+  input.focus();
+  const p = ctx.at + 1 + f.m.name.length + 1;
+  input.setSelectionRange(p, p);
+}
+function hideSugg(delayed){
+  const box = $('#sugg');
+  if(delayed){ setTimeout(()=>box.classList.remove('open'), 120); }
+  else box.classList.remove('open');
+  suggIndex = -1;
+}
+function suggNav(dir){
+  const items = [...document.querySelectorAll('#sugg .s-item')];
+  if(!items.length) return false;
+  suggIndex = (suggIndex + dir + items.length) % items.length;
+  items.forEach((el,i)=>el.classList.toggle('hi', i===suggIndex));
+  return true;
+}
+
+/* ============ ações ============ */
+function addTask(mid,text){
+  const f = findMacro(mid); if(!f) return;
+  f.m.tasks.push(T(text));
+  touch(); render();
+  const el = document.querySelector(`.card[data-mid="${mid}"] .task-add input`);
+  if(el) el.focus();
+}
+function cycleStatus(mid,tid){
+  const f = findMacro(mid); if(!f) return;
+  const t = f.m.tasks.find(t=>t.id===tid); if(!t) return;
+  t.status = STATUSES[(STATUSES.indexOf(t.status)+1) % STATUSES.length];
+  touch(); render();
+}
+function removeTask(mid,tid){
+  const f = findMacro(mid); if(!f) return;
+  pushUndo('exclusão de tarefa');
+  f.m.tasks = f.m.tasks.filter(t=>t.id!==tid);
+  toast('Tarefa excluída.', false, true);
+  touch(); render();
+}
+function askDate(mid,tid){
+  const f = findMacro(mid); if(!f) return;
+  const t = f.m.tasks.find(t=>t.id===tid); if(!t) return;
+  const v = prompt('Data (AAAA-MM-DD), vazio remove:', t.date||'');
+  if(v===null) return;
+  t.date = /^\d{4}-\d{2}-\d{2}$/.test(v.trim()) ? v.trim() : '';
+  touch(); render();
+}
+function addLink(mid){
+  const f = findMacro(mid); if(!f) return;
+  const url = prompt('Link de referência (imagem, Drive, post, etc):','https://');
+  if(!url || !url.trim() || url.trim()==='https://') return;
+  if(!f.m.links) f.m.links = [];
+  f.m.links.push({id:uid(), url:url.trim()});
+  touch(); render();
+}
+function removeLink(mid,lid){
+  const f = findMacro(mid); if(!f || !f.m.links) return;
+  pushUndo('remoção de link');
+  f.m.links = f.m.links.filter(l=>l.id!==lid);
+  toast('Link removido.', false, true);
+  touch(); render();
+}
+function clearDone(mid){
+  const f = findMacro(mid); if(!f) return;
+  const before = f.m.tasks.length;
+  pushUndo('limpeza de feitas/canceladas');
+  f.m.tasks = f.m.tasks.filter(t=>!['feito','cancelado'].includes(t.status));
+  if(f.m.tasks.length < before) toast('Arquivadas.', true, true);
+  touch(); render();
+}
+function removeMacro(mid){
+  const f = findMacro(mid); if(!f) return;
+  if(f.m.tasks.length && !confirm('Excluir "'+f.m.name+'" e suas tarefas?')) return;
+  pushUndo('exclusão do quadro '+f.m.name);
+  f.s.macros = f.s.macros.filter(m=>m.id!==mid);
+  state.prio.mkt = state.prio.mkt.filter(id=>id!==mid);
+  state.prio.glz = state.prio.glz.filter(id=>id!==mid);
+  toast('Quadro excluído.', false, true);
+  touch(); render();
+}
+function removeSection(sid){
+  const f = findSection(sid); if(!f) return;
+  if(f.s.macros.length && !confirm('Excluir a categoria "'+f.s.name+'" e tudo dentro?')) return;
+  pushUndo('exclusão da categoria '+f.s.name);
+  state.sections = state.sections.filter(s=>s.id!==sid);
+  toast('Categoria excluída.', false, true);
+  touch(); render();
+}
+function removeInbox(tid){
+  pushUndo('descarte da captura');
+  state.inbox = state.inbox.filter(t=>t.id!==tid);
+  toast('Descartada.', false, true);
+  touch(); render();
+}
+
+/* ============ criação inline ============ */
+function startAddMacro(btn,sid){
+  btn.outerHTML = `<div class="inline-add"><input type="text" placeholder="nome do quadro, enter cria"
+    onkeydown="if(event.key==='Enter'&&this.value.trim()){createMacro('${sid}',this.value.trim())}else if(event.key==='Escape'){render()}"
+    onblur="if(!this.value.trim())render()"></div>`;
+  document.querySelector(`section[data-sid="${sid}"] .inline-add input`).focus();
+}
+function createMacro(sid,name){
+  const f = findSection(sid); if(!f) return;
+  f.s.macros.push({id:uid(), name, prioridade:'', obs:'', links:[], tasks:[]});
+  touch(); render();
+}
+function startAddSection(btn){
+  btn.outerHTML = `<div class="inline-add" style="margin-top:16px"><input type="text" placeholder="nome da categoria"
+    onkeydown="if(event.key==='Enter'&&this.value.trim()){createSection(this.value.trim())}else if(event.key==='Escape'){render()}"
+    onblur="if(!this.value.trim())render()"></div>`;
+  document.querySelector(`#sections .inline-add input`).focus();
+}
+function createSection(name){
+  state.sections.push({id:uid(), name, macros:[]});
+  touch(); render();
+}
+
+/* ============ renomear / editar ============ */
+document.addEventListener('input', e=>{
+  const t = e.target;
+  if(t.classList && t.classList.contains('nome-input') && t.dataset.field==='nome'){
+    const f = findMacro(t.dataset.mid);
+    if(f){ f.m.name = t.value; touch(); save(); }
+  }
+});
+
+function editInline(el,type,id){
+  const old = el.textContent;
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = old;
+  input.style.cssText = 'font:inherit;color:inherit;width:100%;background:var(--card-hi);border-radius:4px;padding:1px 4px';
+  el.replaceWith(input);
+  input.focus(); input.select();
+  const commit = ()=>{
+    const v = input.value.trim();
+    if(v && v!==old) applyRename(type,id,v);
+    touch(); render();
+  };
+  input.onblur = commit;
+  input.onkeydown = e=>{
+    if(e.key==='Enter') commit();
+    if(e.key==='Escape') render();
+  };
+}
+function applyRename(type,id,v){
+  if(type==='task'){
+    const [mid,tid]=id.split('|'); const f=findMacro(mid);
+    if(f){ const t=f.m.tasks.find(t=>t.id===tid); if(t) t.text=v; }
+  }
+}
+
+/* ============ drag & drop (inbox/tasks -> quadro) ============ */
+let drag = null;
+function dragTask(e,tid,from){
+  drag = {type:'task', tid, from};
+  e.dataTransfer.effectAllowed='move';
+  e.stopPropagation();
+}
+function dragEnd(e){
+  document.querySelectorAll('.drag-over').forEach(el=>el.classList.remove('drag-over'));
+}
+function cardDragOver(e,mid){
+  if(!drag || drag.type!=='task') return;
+  e.preventDefault(); e.stopPropagation();
+  e.currentTarget.classList.add('drag-over');
+}
+function cardDrop(e,mid){
+  if(!drag || drag.type!=='task') return;
+  e.preventDefault(); e.stopPropagation();
+  e.currentTarget.classList.remove('drag-over');
+  const dest = findMacro(mid); if(!dest){ drag=null; return; }
+
+  let task = null;
+  if(drag.from==='inbox'){
+    const i = state.inbox.findIndex(t=>t.id===drag.tid);
+    if(i>-1) task = state.inbox.splice(i,1)[0];
+  }else{
+    const src = findMacro(drag.from);
+    if(src && src.m.id!==mid){
+      const i = src.m.tasks.findIndex(t=>t.id===drag.tid);
+      if(i>-1){ task = src.m.tasks.splice(i,1)[0]; task.status='movido'; }
+    }
+  }
+  if(task){
+    if(task.status==='movido') task.status='pendente';
+    dest.m.tasks.push(task);
+    toast('Movida para '+dest.m.name, true);
+  }
+  drag = null;
+  touch(); render();
+}
+
+/* ============ sync com Notion (GLZ_TAREFAS) ============ */
+// busca via /api/glz-tarefas (função serverless na Vercel, token fica só lá).
+// atualiza nome/prioridade/obs vindos do Notion, mas nunca mexe em tasks/links/prio
+// já customizados aqui — só cria macro nova se o item do Notion ainda não existe local.
+const STATUS_LABEL = {
+  'Fila':'Em fila',
+  'Aguardando Material':'Aguardando material',
+  'Briefing':'Em briefing',
+  'Em andamento':'Em andamento',
+  'Produção':'Em produção',
+  'Design':'Em design',
+  'Revisão Interna':'Em revisão interna',
+  'Aguardando Aprovação':'Aguardando aprovação',
+  'Concluído':'Concluído'
+};
+function buildObsFromNotion(row){
+  const label = STATUS_LABEL[row.status] || row.status || '';
+  if(label && row.obs) return label+' — '+row.obs;
+  return label || row.obs || '';
+}
+function findMacroByNotionId(nid){
+  if(!nid) return null;
+  for(const s of state.sections) for(const m of s.macros) if(m.notionId===nid) return m;
+  return null;
+}
+function findMacroByName(name){
+  const q = name.trim().toLowerCase();
+  for(const s of state.sections) for(const m of s.macros) if(m.name.trim().toLowerCase()===q) return m;
+  return null;
+}
+function findSectionForNewItem(row){
+  const tag = (row.projeto && row.projeto[0]) || '';
+  if(tag){
+    const hit = state.sections.find(s=>s.name.toLowerCase()===tag.toLowerCase());
+    if(hit) return hit;
+  }
+  let fallback = state.sections.find(s=>s.name==='Sem categoria');
+  if(!fallback){
+    fallback = {id:uid(), name:'Sem categoria', macros:[]};
+    state.sections.push(fallback);
+  }
+  return fallback;
+}
+function mergeNotionRows(rows){
+  let changed = false;
+  rows.forEach(row=>{
+    if(!row.nome) return;
+    const target = findMacroByNotionId(row.id) || findMacroByName(row.nome);
+    if(target){
+      if(!target.notionId){ target.notionId = row.id; }
+      if(row.prioridade && target.prioridade !== row.prioridade){
+        target.prioridade = row.prioridade; changed = true;
+      }
+      const novaObs = buildObsFromNotion(row);
+      if(novaObs !== target.obs){ target.obs = novaObs; changed = true; }
+    }else{
+      const section = findSectionForNewItem(row);
+      section.macros.push({
+        id: uid(), notionId: row.id, name: row.nome,
+        prioridade: row.prioridade || '', obs: buildObsFromNotion(row),
+        links: [], tasks: [T('Quebrar em passos de execução')]
+      });
+      changed = true;
+    }
+  });
+  return changed;
+}
+async function syncFromNotion(silent){
+  const btn = $('#syncBtn');
+  if(btn) btn.classList.add('syncing');
+  try{
+    const r = await fetch('/api/glz-tarefas', {cache:'no-store'});
+    const data = await r.json();
+    if(!r.ok) throw new Error(data.error || 'erro na sincronização');
+    const rows = Array.isArray(data.rows) ? data.rows : [];
+    if(!rows.length){
+      if(!silent) toast('Nenhuma tarefa encontrada no Notion.');
+      return;
+    }
+    const changed = mergeNotionRows(rows);
+    if(changed){ touch(); render(); toast('Atualizado a partir do Notion.', true); }
+    else if(!silent){ toast('Já estava tudo atualizado.', true); }
+  }catch(e){
+    console.warn('sync notion falhou:', e);
+    if(!silent) toast('Não consegui puxar do Notion agora.');
+  }finally{
+    if(btn) btn.classList.remove('syncing');
+  }
+}
+
+/* ============ atalhos e cliques globais ============ */
+document.addEventListener('keydown', e=>{
+  const typing = ['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName);
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='z' && !typing){
+    e.preventDefault();
+    undo();
+    return;
+  }
+  if(e.key.toLowerCase()==='n' && !typing && !e.ctrlKey && !e.metaKey){
+    e.preventDefault();
+    $('#capture').focus();
+  }
+  if(e.key==='/' && !typing){
+    e.preventDefault();
+    $('#search').focus();
+  }
+  if(e.key==='Escape' && $('#ctx').classList.contains('open')){
+    closeCtx();
+  }
+});
+document.addEventListener('click', e=>{
+  if($('#ctx').classList.contains('open') && !e.target.closest('#ctx')) closeCtx();
+});
+window.addEventListener('scroll', closeCtx, true);
+window.addEventListener('resize', closeCtx);
+
+render();
+if(memoryOnly){
+  toast('Sem armazenamento local aqui. Baixa o arquivo e abre no navegador pra salvar de verdade.');
+}
+syncFromNotion(true);
+</script>
+</body>
+</html>
